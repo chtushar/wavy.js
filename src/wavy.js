@@ -1,19 +1,23 @@
 class wavy {
   //CONSTRUCTOR
-  constructor(canvas, obj) {
+  constructor(canvas, obj={}) {
     this.c = document.getElementById(canvas);
     this.ctx = this.c.getContext("2d");
     this.c.width = obj.width || window.innerWidth;
     this.c.height = obj.height || window.innerHeight;
     this.phase = Number(obj.phase) || 360;
-    this.damp = obj.damp || 0.002;
-    this.wavelength = Number(obj.wavelength) || this.c.width;
+    this.damp = obj.damp ;
     this.color = obj.color || "blue";
     this.radius = Number(obj.stroke) || 1;
     this.speed = Number(obj.speed) || 5;
     this.origin = obj.origin || { x: 0, y: this.c.height / 2 };
     this.amplitude = obj.amplitude || this.c.height / 2.5;
+    this.speed = obj.speed || 10;
+    this.frequency = obj.frequency || 1;
+    this.wavelength = obj.wavelength || this.c.width;
   }
+  // To Output a Range
+  rangeIn = (num ,oS, oE, iS, iE) => oS + ((oE - oS)/(iE - iS))*(num - iS) 
 
   //To Convert Degrees to Radians
   toRadians = degree => (degree * Math.PI) / 180;
@@ -33,14 +37,22 @@ class wavy {
   }
 
   //To Draw Wave
-  wave() {
-    for (let i = 0; i < this.origin.x + this.wavelength; i += 0.5) {
-      let angle = this.toRadians(i) + this.toRadians(this.phase);
-      let y =
-        this.origin.y +
-        this.amplitude * Math.exp(-i * this.damp) * Math.cos(angle);
-      this.dot(i, y, this.radius, this.color, this.ctx);
+  drawWave(p) {
+    for (let i = this.origin.x; i < this.wavelength; i += 0.7) {
+      let f = this.rangeIn(i,0,this.wavelength - this.origin.x, this.origin.x, this.wavelength);
+      let angle = this.toRadians(f + p);
+      // let y =
+      //   this.origin.y +
+      //   this.amplitude * Math.exp(-i * this.damp) * Math.cos(angle);
+
+        let y = this.origin.y - this.amplitude*Math.exp(-i * this.damp) * Math.cos(angle);
+        this.dot(i, y, this.radius, this.color, this.ctx);
     }
+  }
+
+
+  clear(){
+    this.ctx.clearRect(0, 0, this.c.width, this.c.height);
   }
 
   //30FPS
@@ -51,8 +63,8 @@ class wavy {
       }
 
       this.ctx.clearRect(0, 0, this.c.width, this.c.height);
-      this.wave();
-      this.phase -= 10;
+      this.drawWave(this.phase);
+      this.phase -= this.speed;
     }, 34);
   }
 
@@ -65,8 +77,8 @@ class wavy {
       }
 
       this.ctx.clearRect(0, 0, this.c.width, this.c.height);
-      this.wave();
-      this.phase -= 10;
+      this.drawWave(this.phase);
+      this.phase -= this.speed;
     }, 34);
   }
 }
